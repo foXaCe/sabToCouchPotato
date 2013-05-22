@@ -3,7 +3,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to SickBeard.
+# Post-Process to CouchPotato, SickBeard, Mylar, Gamez, HeadPhones.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -11,6 +11,53 @@
 
 ##############################################################################
 ### OPTIONS                                                                ###
+
+## CouchPotato
+
+# CouchPotato script category.
+#
+# category that gets called for post-processing with CouchPotatoServer.
+#cpsCategory=movie
+
+# CouchPotato api key.
+#cpsapikey=
+
+# CouchPotato host.
+#cpshost=localhost
+
+# CouchPotato port.
+#cpsport=5050
+
+# CouchPotato username.
+#cpsusername= 
+
+# CouchPotato password.
+#cpspassword=
+
+# CouchPotato uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#cpsssl=0
+
+# CouchPotato URL_Base
+#
+# set this if using a reverse proxy.
+#cpsweb_root=
+
+# CouchPotato Postprocess Delay.
+#
+# must be at least 60 seconds.
+#cpsdelay=65
+
+# CouchPotato Postprocess Method (renamer, manage).
+#
+# use "renamer" for CPS renamer (default) or "manage" to call a manage update.
+#cpsmethod=renamer
+
+# CouchPotato Delete Failed Downloads (0, 1).
+#
+# set to 1 to delete failed, or 0 to leave files in place.
+#cpsdelete_failed=0
 
 ## SickBeard
 
@@ -51,10 +98,108 @@
 # set to 1 if using the custom "failed fork". Default sickBeard uses 0.
 #sbfailed_fork=0
 
-# SickBeard Delete Failed Downloads (0, 1).
+# SickBeard Delete Failed Downloads (0, 1)
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #sbdelete_failed=0
+
+## HeadPhones
+
+# HeadPhones script category.
+#
+# category that gets called for post-processing with HeadHones.
+#hpCategory=music
+
+# HeadPhones api key.
+#hpapikey=
+
+# HeadPhones host.
+#hphost=localhost
+
+# HeadPhones port.
+#hpport=8181
+
+# HeadPhones username.
+#hpusername= 
+
+# HeadPhones password.
+#hppassword=
+
+# HeadPhones uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#hpssl=0
+
+# HeadPhones web_root
+#
+# set this if using a reverse proxy.
+#hpweb_root=
+
+# HeadPhones Postprocess Delay.
+#
+# set as required to ensure correct processing.
+#hpdelay=65
+
+## Mylar
+
+# Mylar script category.
+#
+# category that gets called for post-processing with Mylar.
+#myCategory=comics
+
+# Mylar host.
+#myhost=localhost
+
+# Mylar port.
+#myport=8090
+
+# Mylar username.
+#myusername= 
+
+# Mylar password.
+#mypassword=
+
+# Mylar uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#myssl=0
+
+# Mylar web_root
+#
+# set this if using a reverse proxy.
+#myweb_root=
+
+## Gamez
+
+# Gamez script category.
+#
+# category that gets called for post-processing with Gamez.
+#gzCategory=games
+
+# Gamez api key.
+#gzapikey=
+
+# Gamez host.
+#gzhost=localhost
+
+# Gamez port.
+#gzport=8085
+
+# Gamez username.
+#gzusername=
+
+# Gamez password.
+#gzpassword=
+
+# Gamez uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#gzssl=0
+
+# Gamez web_root
+#
+# set this if using a reverse proxy.
+#gzweb_root=
 
 ## Extensions
 
@@ -111,14 +256,19 @@
 
 import os
 import sys
+import ConfigParser
 import logging
 
 import autoProcess.migratecfg as migratecfg
+import autoProcess.autoProcessComics as autoProcessComics
+import autoProcess.autoProcessGames as autoProcessGames
+import autoProcess.autoProcessMusic as autoProcessMusic
 import autoProcess.autoProcessTV as autoProcessTV
+import autoProcess.autoProcessMovie as autoProcessMovie
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 
-#check to migrate old cfg before trying to load.
+# check to migrate old cfg before trying to load.
 if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")):
     migratecfg.migrate()
 # check to write settings from nzbGet UI to autoProcessMedia.cfg.
@@ -129,9 +279,24 @@ nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
 Logger.info("====================") # Seperate old from new log
-Logger.info("nzbToSickBeard %s", VERSION)
+Logger.info("nzbToMedia %s", VERSION)
 
 WakeUp()
+
+config = ConfigParser.ConfigParser()
+configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+if not os.path.isfile(configFilename):
+    Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+    sys.exit(-1)
+# CONFIG FILE
+Logger.info("MAIN: Loading config from %s", configFilename)
+config.read(configFilename)
+
+cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
+sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
+hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
+mlCategory = config.get("Mylar", "mlCategory")                                      # comics
+gzCategory = config.get("Gamez", "gzCategory")                                      # games
 
 # NZBGet V11+
 # Check if the script is called from nzbget 11.0 or later
@@ -139,6 +304,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     Logger.info("MAIN: Script triggered from NZBGet (11.0 or later).")
 
     # NZBGet argv: all passed as environment variables.
+    clientAgent = "nzbget"
     # Exit codes used by NZBGet
     POSTPROCESS_PARCHECK=92
     POSTPROCESS_SUCCESS=93
@@ -196,8 +362,10 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
         status = 1
 
     # All checks done, now launching the script.
-    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status)
+    download_id = ""
+    if os.environ.has_key('NZBPR_COUCHPOTATO'):
+        download_id = os.environ['NZBPR_COUCHPOTATO']
+    nzbDir, inputName, inputCategory = (os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], os.environ['NZBPP_CATEGORY'])
 # SABnzbd
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -208,28 +376,48 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 5 User-defined category
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    Logger.info("Script triggered from SABnzbd, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
+    Logger.info("MAIN: Script triggered from SABnzbd")
+    clientAgent = "sabnzbd"
+    nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[7], sys.argv[5], '')
 # NZBGet
-elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
+elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS: # nzbget v10 or earlier.
     # NZBGet argv:
     # 1  The final directory of the job (full path)
     # 2  The original name of the NZB file
     # 3  The status of the download: 0 == successful
     # 4  The category of the download:
     # 5  The download_id
-    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
-else:
-    Logger.debug("Invalid number of arguments received from client.")
-    Logger.info("Running autoProcessTV as a manual run...")
-    result = autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
+    Logger.info("MAIN: Script triggered from NZBGet")
+    clientAgent = "nzbget"
+    nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+
+else: # only CPS supports this manual run for now.
+    Logger.warn("MAIN: Invalid number of arguments received from client.")
+    Logger.info("MAIN: Running autoProcessMovie as a manual run...")
+    clientAgent = "manual"
+    nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory, '')
+
+if inputCategory == cpsCategory:
+    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
+    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id)
+elif inputCategory == sbCategory:
+    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+    result = autoProcessTV.processEpisode(nzbDir, inputName, status)
+elif inputCategory == hpCategory:
+    Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
+    result = autoProcessMusic.process(nzbDir, inputName, status)
+elif inputCategory == mlCategory:
+    Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
+    result = autoProcessComics.processEpisode(nzbDir, inputName, status)
+elif inputCategory == gzCategory:
+    Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
+    result = autoProcessGames.process(nzbDir, inputName, status)
 
 if result == 0:
-    Logger.info("MAIN: The autoProcessTV script completed successfully.")
+    Logger.info("MAIN: The autoProcess* script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(POSTPROCESS_SUCCESS)
 else:
-    Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+    Logger.info("MAIN: A problem was reported in the autoProcess* script.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(POSTPROCESS_ERROR)

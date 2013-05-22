@@ -1,0 +1,147 @@
+# nzbToMedia Configuration
+# For more information, visit https://github.com/clinton-hall/nzbToMedia/wiki
+
+[CouchPotato]
+#### autoProcessing for Movies
+#### cpsCategory - category that gets called for post-processing with CPS
+cpsCategory = movie
+apikey =
+host = localhost
+port = 5050
+username = 
+password =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
+ssl = 0
+web_root =
+delay = 65
+method = renamer
+delete_failed = 0
+
+
+[SickBeard]
+#### autoProcessing for TV Series
+#### sbCategory - category that gets called for post-processing with SB
+sbCategory = tv
+host = localhost
+port = 8081
+username =
+password =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+web_root =
+ssl = 0
+watch_dir =
+failed_fork = 0
+delete_failed = 0
+
+
+[HeadPhones]
+#### autoProcessing for Music
+#### hpCategory - category that gets called for post-processing with HP
+hpCategory = music
+apikey =
+host = localhost
+port = 8181
+username = 
+password =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
+ssl = 0
+web_root =
+delay = 65
+
+
+[Mylar]
+#### autoProcessing for Comics
+#### mlCategory - category that gets called for post-processing with Mylar
+mlCategory = comics
+host = localhost
+port= 8090
+username=
+password=
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
+web_root=
+ssl=0
+
+
+[Gamez]
+#### autoProcessing for Games
+#### gzCategory - category that gets called for post-processing with Gamez
+gzCategory = games
+apikey =
+host = localhost
+port = 8085
+username = 
+password =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
+ssl = 0
+web_root =
+
+
+[Torrent]
+###### clientAgent - Supported clients: utorrent, transmission, deluge, other
+clientAgent = other
+###### useLink - Set to hard for physical links, sym for symbolic links, and no to not use links
+useLink = hard
+###### minSampleSize - Minimum required size to consider a file not an sample file (in MB, eg 200mb)
+minSampleSize = 200
+###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
+outputDirectory = /abs/path/to/complete/
+###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
+categories = music_videos,pictures,software
+###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
+uTorrentWEBui = http://localhost:8090/gui/
+uTorrentUSR = your username
+uTorrentPWD = your password
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+deleteOriginal = 0
+
+[Extensions]
+compressedExtensions = .zip,.rar,.7z,.gz,.bz,.tar,.arj,.1,.01,.001
+mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
+metaExtensions = .nfo,.sub,.srt,.jpg,.gif
+
+[Transcoder]
+transcode = 0
+###### duplicate =1 will cretae a new file. =0 will replace the original
+duplicate = 1
+ignoreExtensions = .avi,.mkv
+outputVideoExtension = .mp4
+outputVideoCodec = libx264
+outputVideoPreset = medium
+outputVideoFramerate = 24
+outputVideoBitrate = 800k
+outputAudioCodec = libmp3lame
+outputAudioBitrate = 128k
+outputSubtitleCodec = 
+
+[WakeOnLan]
+###### set wake = 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) the host and port specified.
+wake = 0
+host = 192.168.1.37
+port = 80
+mac = 00:01:2e:2D:64:e1
+
+
+# Logging configuration
+[loggers]
+keys = root
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = NOTSET
+handlers = console
+qualname =
+
+[handler_console]
+class = StreamHandler
+args = (sys.stdout,)
+level = INFO
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s|%(levelname)-7.7s %(message)s
+datefmt = %H:%M:%S

@@ -3,7 +3,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to SickBeard.
+# Post-Process to Mylar.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -12,83 +12,34 @@
 ##############################################################################
 ### OPTIONS                                                                ###
 
-## SickBeard
+## Mylar
 
-# SickBeard script category.
+# Mylar script category.
 #
-# category that gets called for post-processing with SickBeard.
-#sbCategory=tv
+# category that gets called for post-processing with Mylar.
+#myCategory=comics
 
-# SickBeard host.
-#sbhost=localhost
+# Mylar host.
+#myhost=localhost
 
-# SickBeard port.
-#sbport=8081
+# Mylar port.
+#myport=8090
 
-# SickBeard username.
-#sbusername= 
+# Mylar username.
+#myusername= 
 
-# SickBeard password.
-#sbpassword=
+# Mylar password.
+#mypassword=
 
-# SickBeard uses ssl (0, 1).
+# Mylar uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
-#sbssl=0
+#myssl=0
 
-# SickBeard web_root
+# Mylar web_root
 #
 # set this if using a reverse proxy.
-#sbweb_root=
-
-# SickBeard watch directory.
-#
-# set this if SickBeard and nzbGet are on different systems.
-#sbwatch_dir=
-
-# SickBeard uses failed fork (0, 1).
-#
-# set to 1 if using the custom "failed fork". Default sickBeard uses 0.
-#sbfailed_fork=0
-
-# SickBeard Delete Failed Downloads (0, 1).
-#
-# set to 1 to delete failed, or 0 to leave files in place.
-#sbdelete_failed=0
-
-## Extensions
-
-# Media Extensions
-#
-# This is a list of media extensions that may be transcoded if transcoder is enabled below.
-#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
-
-## Transcoder
-
-# Transcode (0, 1).
-#
-# set to 1 to transcode, otherwise set to 0.
-#transcode=0
-
-# create a duplicate, or replace the original (0, 1).
-#
-# set to 1 to cretae a new file or 0 to replace the original
-#duplicate=1
-
-# ignore extensions
-#
-# list of extensions that won't be transcoded. 
-#ignoreExtensions=.avi,.mkv
-
-# ffmpeg output settings.
-#outputVideoExtension=.mp4
-#outputVideoCodec=libx264
-#outputVideoPreset=medium
-#outputVideoFramerate=24
-#outputVideoBitrate=800k
-#outputAudioCodec=libmp3lame
-#outputAudioBitrate=128k
-#outputSubtitleCodec=
+#myweb_root=
 
 ## WakeOnLan
 
@@ -114,7 +65,7 @@ import sys
 import logging
 
 import autoProcess.migratecfg as migratecfg
-import autoProcess.autoProcessTV as autoProcessTV
+import autoProcess.autoProcessComics as autoProcessComics
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 
@@ -129,7 +80,7 @@ nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
 Logger.info("====================") # Seperate old from new log
-Logger.info("nzbToSickBeard %s", VERSION)
+Logger.info("nzbToMylar %s", VERSION)
 
 WakeUp()
 
@@ -196,8 +147,8 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
         status = 1
 
     # All checks done, now launching the script.
-    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status)
+    Logger.info("Script triggered from NZBGet, starting autoProcessComics...")
+    result = autoProcessComics.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
 # SABnzbd
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -208,8 +159,8 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 5 User-defined category
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    Logger.info("Script triggered from SABnzbd, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
+    Logger.info("Script triggered from SABnzbd, starting autoProcessComics...")
+    result = autoProcessComics.processEpisode(sys.argv[1], sys.argv[3], sys.argv[7])
 # NZBGet
 elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # NZBGet argv:
@@ -218,18 +169,17 @@ elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # 3  The status of the download: 0 == successful
     # 4  The category of the download:
     # 5  The download_id
-    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
+    Logger.info("Script triggered from NZBGet, starting autoProcessComics...")
+    result = autoProcessComics.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
-    Logger.debug("Invalid number of arguments received from client.")
-    Logger.info("Running autoProcessTV as a manual run...")
-    result = autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
+    Logger.warn("Invalid number of arguments received from client. Exiting")
+    sys.exit(-1)
 
 if result == 0:
-    Logger.info("MAIN: The autoProcessTV script completed successfully.")
+    Logger.info("MAIN: The autoProcessComics script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(POSTPROCESS_SUCCESS)
 else:
-    Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+    Logger.info("MAIN: A problem was reported in the autoProcessComics script.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(POSTPROCESS_ERROR)

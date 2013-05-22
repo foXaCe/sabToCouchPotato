@@ -3,7 +3,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to SickBeard.
+# Post-Process to HeadPhones.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -12,83 +12,42 @@
 ##############################################################################
 ### OPTIONS                                                                ###
 
-## SickBeard
+## HeadPhones
 
-# SickBeard script category.
+# HeadPhones script category.
 #
-# category that gets called for post-processing with SickBeard.
-#sbCategory=tv
+# category that gets called for post-processing with HeadHones.
+#hpCategory=music
 
-# SickBeard host.
-#sbhost=localhost
+# HeadPhones api key.
+#hpapikey=
 
-# SickBeard port.
-#sbport=8081
+# HeadPhones host.
+#hphost=localhost
 
-# SickBeard username.
-#sbusername= 
+# HeadPhones port.
+#hpport=8181
 
-# SickBeard password.
-#sbpassword=
+# HeadPhones username.
+#hpusername= 
 
-# SickBeard uses ssl (0, 1).
+# HeadPhones password.
+#hppassword=
+
+# HeadPhones uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
-#sbssl=0
+#hpssl=0
 
-# SickBeard web_root
+# HeadPhones web_root
 #
 # set this if using a reverse proxy.
-#sbweb_root=
+#hpweb_root=
 
-# SickBeard watch directory.
+# HeadPhones Postprocess Delay.
 #
-# set this if SickBeard and nzbGet are on different systems.
-#sbwatch_dir=
-
-# SickBeard uses failed fork (0, 1).
-#
-# set to 1 if using the custom "failed fork". Default sickBeard uses 0.
-#sbfailed_fork=0
-
-# SickBeard Delete Failed Downloads (0, 1).
-#
-# set to 1 to delete failed, or 0 to leave files in place.
-#sbdelete_failed=0
-
-## Extensions
-
-# Media Extensions
-#
-# This is a list of media extensions that may be transcoded if transcoder is enabled below.
-#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
-
-## Transcoder
-
-# Transcode (0, 1).
-#
-# set to 1 to transcode, otherwise set to 0.
-#transcode=0
-
-# create a duplicate, or replace the original (0, 1).
-#
-# set to 1 to cretae a new file or 0 to replace the original
-#duplicate=1
-
-# ignore extensions
-#
-# list of extensions that won't be transcoded. 
-#ignoreExtensions=.avi,.mkv
-
-# ffmpeg output settings.
-#outputVideoExtension=.mp4
-#outputVideoCodec=libx264
-#outputVideoPreset=medium
-#outputVideoFramerate=24
-#outputVideoBitrate=800k
-#outputAudioCodec=libmp3lame
-#outputAudioBitrate=128k
-#outputSubtitleCodec=
+# set as required to ensure correct processing.
+#hpdelay=65
 
 ## WakeOnLan
 
@@ -114,7 +73,7 @@ import sys
 import logging
 
 import autoProcess.migratecfg as migratecfg
-import autoProcess.autoProcessTV as autoProcessTV
+import autoProcess.autoProcessMusic as autoProcessMusic
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 
@@ -129,7 +88,7 @@ nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
 Logger.info("====================") # Seperate old from new log
-Logger.info("nzbToSickBeard %s", VERSION)
+Logger.info("nzbToHeadPhones %s", VERSION)
 
 WakeUp()
 
@@ -195,9 +154,9 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
         Logger.error("Post-Process: Nothing to post-process: destination directory %s doesn't exist", os.environ['NZBPP_DIRECTORY'])
         status = 1
 
-    # All checks done, now launching the script.
-    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status)
+    # All checks done, now launching the script
+    Logger.info("Script triggered from NZBGet, starting autoProcessMusic...")
+    result = autoProcessMusic.process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
 # SABnzbd
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -208,8 +167,8 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 5 User-defined category
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    Logger.info("Script triggered from SABnzbd, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
+    Logger.info("Script triggered from SABnzbd, starting autoProcessMusic...")
+    result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[7])
 # NZBGet
 elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # NZBGet argv:
@@ -218,18 +177,18 @@ elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # 3  The status of the download: 0 == successful
     # 4  The category of the download:
     # 5  The download_id
-    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
+    Logger.info("Script triggered from NZBGet, starting autoProcessMusic...")
+    result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
-    Logger.debug("Invalid number of arguments received from client.")
-    Logger.info("Running autoProcessTV as a manual run...")
-    result = autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
+    Logger.warn("Invalid number of arguments received from client.")
+    Logger.info("Running autoProcessMusic as a manual run...")
+    result = autoProcessMusic.process('Manual Run', 'Manual Run', 0)
 
 if result == 0:
-    Logger.info("MAIN: The autoProcessTV script completed successfully.")
+    Logger.info("MAIN: The autoProcessMusic script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(POSTPROCESS_SUCCESS)
 else:
-    Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+    Logger.info("MAIN: A problem was reported in the autoProcessMusic script.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(POSTPROCESS_ERROR)

@@ -1,12 +1,142 @@
 Change_LOG / History
 
+V8.1 04/05/2013
+
+Impacts All
+Improved exception logging for error conditions
+
+Impacts Torrents
+Fixed an import error when extracting
+
+Impacts NZBs
+Fixed passthrough of nzbName from NZBGet to pass the .nzb extension (required for SickBeard's failed fork)
+
+
+V8.0 28/04/2013
+
+Impacts All
+Added download_id pass through for CouchPotato release matching
+Uses single directory scanning for CouchPotato renamer
+Matches imdb_id, download_id, clientAgent with CPS database
+
+Impacts NZB
+Addeed direct configuration support via nzbget webUI (nzbget v11+)
+All nzb scripts are now directly callabale in nzbget v11
+Settings made in nzbget webUI will be applied to the auotPorcessMedia.cfg when the scripts are run from nzbget.
+Fixed TLS support for NZBGet email notifications (for V10 support) 
+
+V7.1 28/03/2013
+
+Impacts Torrents
+Added test for chp.exe. If not found, calls 7zip directly
+Added test for multi-part archives. Will only extract part1
+
+Impacts NZB
+Fixed failed download handling from nzbget (won't delete or move root!!!)
+Fixed sendEmail for nzbget to use html with <br> line breaks
+
+V7.0 21/03/2013
+
+Impacts Torrents
+Added option to delete torrent and original files after processing (utorrent)
+
+Impacts NZB 
+Added nzbget windows script (to be compiled)
+Changed nzbget folders to previous X.X, current-stable, testing X.X format
+Fix nzbget change directory failure problem
+Improved nzbget logging
+Add logging to nzbget email notification
+Synchronised v10 to latest nzbget testing scripts
+Added failed download folder for failed downloads in nzbget
+Added option to delete failed in nzbget
+Created a single nzbToMedia.py script for all categories (will be the only nzb script compiled for windows)
+
+Impacts All
+Added rotating log file handler
+Added ffmpeg transcoder
+Added CouchPotato status check to provide confirmation of renamer complete 
+CouchPotato status check will timeout after 2 minutes in case something goes wrong
+Improved logging.
+Improved scen exception handling.
+Major changes to code layout
+Better efficiency
+Added support for Mylar, Gamez, and HeadPhones
+Moved many of the "support" files to the autoProcess directory so that they aren't visible (looks neater)
+Added migration tool to update .cfg file on first run following update.
+
+V6.0 03/03/2013
+
+Impacts Torrents
+Bundled 7zip binaries and created extraction functions.
+Now pauses uTorrent seeding before calling renamer in SickBeard/CouchPotatoServer
+uTorrent Resumes seeding after files (hardlinks) have been renamed
+
+Impacts NZB 
+Added local file logging.
+
+Impacts All
+Added scene exception handling. Currently for "QoQ"
+Improved code layout. 
+
+
+V5.1 22/02/2013
+
+Improved category search to loop through directory structure.
+Added support for deluge and potentially other Torrent clients.
+uTorrent now must pass "utorrent" before "%D" "%N" "%L"
+added test for date modified (less than 5 mins ago) if root directory and no torrent name.
+".cp(ttxxxxxx)" tag preserved in directory name for CPS renaming.
+All changes affect Torrent handling. Should not impact NZB handling.
+
+V5.0 20/02/2013
+
+Fixed Extarction and Hard-Linking support in TorrentToMedia
+Added new config options for movie file extensions, metadata extensions, compressed file extensions.
+Added braid to sync linktastic.
+Windows Builds now run without console displaying.
+All changes affect Torrent handling. Should not impact NZB handling.
+
+V4.3 17/02/2013
+
+Added Logger in TorrentToMedia.py
+Added nzbget V10.0 script.
+Delete sample files in nzbget postprocessing
+Single Version for all files.
+
+V4.2 12/02/2013
+
+Fixes to TorrentToMedia
+
+V4.1 02/02/2013
+
+Added Torrent Support (µTorrent and Transmission).
+Added manual run option for nzbToSickBeard.
+Changed nzbGet script to use move not copy and remove.
+Merged all .cfg scripts into one (autoProcessMedia.cfg).
+Made all scripts execitable (755) on github.
+Added category limits for email support in nzbget.
+Fixed issue with replacements (of paths) in email messages in nzbget.
+
+V4.0 21/12/2012
+
+Changed name from nzbToCouchPotato to nzbToMedia; Now supports mltiple post-processing from two nzb download clients.
+Added email support for nzbget.
+Version printing now for each of the nzbTo* scripts.
+Added "custom" post-process support in nzbget.
+Added post-process script output logging in nzbget.
+
+V3.2 11/12/2012
+
+Added failed handling from NZBGet. Thanks to schumi2004.
+Also added support for the "failed download" development branch of SickBeard from https://github.com/Tolstyak/Sick-Beard.git
+
 V3.1 02/12/2012
 
-added conversion to ensure the status passed to the autoProcessTV and autoProcessMovie is always handled as an integer.
+Added conversion to ensure the status passed to the autoProcessTV and autoProcessMovie is always handled as an integer.
 
 V3.0 30/11/2012
 
-Changed name to nzbToCouchPotato as this now included NZBGet support.
+Changed name from sabToCouchPotato to nzbToCouchPotato as this now included NZBGet support.
 Packaged the NZBGet postprocess files as well as modified version of nzbToSickBeard (from sabToSickBeard).
 
 
